@@ -15,7 +15,7 @@ TailAdmin provides essential UI components and layouts for building feature-rich
 * Next.js 16.x
 * React 19
 * TypeScript
-* T
+* Todo incluoid en devjfjjf
 
 ### Quick Links
 
