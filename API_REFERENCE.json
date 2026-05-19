@@ -1,0 +1,203 @@
+{
+  "apis": {
+    "signin": {
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "description": "Iniciar sesión con email y contraseña",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "user@example.com",
+          "password": "secure123"
+        }
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "message": "Login exitoso",
+            "user": {
+              "id": 1,
+              "email": "user@example.com",
+              "firstName": "Juan",
+              "lastName": "Pérez"
+            },
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "error": {
+          "status": 401,
+          "body": {
+            "error": "Email o contraseña incorrectos"
+          }
+        }
+      }
+    },
+    "signup": {
+      "method": "POST",
+      "path": "/api/auth/signup",
+      "description": "Registrar nuevo usuario",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "newuser@example.com",
+          "password": "secure123",
+          "confirmPassword": "secure123",
+          "firstName": "Juan",
+          "lastName": "Pérez"
+        }
+      },
+      "response": {
+        "success": {
+          "status": 201,
+          "body": {
+            "message": "Usuario registrado exitosamente",
+            "user": {
+              "id": 1,
+              "email": "newuser@example.com",
+              "firstName": "Juan",
+              "lastName": "Pérez"
+            },
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "error": {
+          "status": 400,
+          "body": {
+            "error": "El email ya está registrado"
+          }
+        }
+      }
+    }
+  },
+  "database": {
+    "type": "PostgreSQL",
+    "provider": "Neon",
+    "tables": {
+      "users": {
+        "fields": [
+          {
+            "name": "id",
+            "type": "SERIAL",
+            "constraints": "PRIMARY KEY"
+          },
+          {
+            "name": "email",
+            "type": "VARCHAR(255)",
+            "constraints": "UNIQUE NOT NULL"
+          },
+          {
+            "name": "password",
+            "type": "VARCHAR(255)",
+            "constraints": "NOT NULL",
+            "note": "Almacenada hasheada con PBKDF2"
+          },
+          {
+            "name": "first_name",
+            "type": "VARCHAR(100)",
+            "constraints": "NULL"
+          },
+          {
+            "name": "last_name",
+            "type": "VARCHAR(100)",
+            "constraints": "NULL"
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "constraints": "DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "constraints": "DEFAULT CURRENT_TIMESTAMP"
+          }
+        ]
+      },
+      "refresh_tokens": {
+        "fields": [
+          {
+            "name": "id",
+            "type": "SERIAL",
+            "constraints": "PRIMARY KEY"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "constraints": "NOT NULL REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "token",
+            "type": "VARCHAR(500)",
+            "constraints": "UNIQUE NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "constraints": "DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "expires_at",
+            "type": "TIMESTAMP",
+            "constraints": "NOT NULL"
+          }
+        ]
+      }
+    }
+  },
+  "authentication": {
+    "method": "JWT",
+    "expiresIn": "7 days",
+    "passwordHash": "PBKDF2",
+    "passwordIterations": 1000,
+    "tokenLocation": "localStorage",
+    "tokenKey": "authToken",
+    "userKey": "user"
+  },
+  "environment_variables": {
+    "DATABASE_URL": {
+      "description": "Connection string para PostgreSQL Neon",
+      "example": "postgresql://user:password@ep-xxxxx.neon.tech/dbname?sslmode=require"
+    },
+    "JWT_SECRET": {
+      "description": "Clave secreta para firmar JWT",
+      "example": "MySecureKey123!@#$%^"
+    }
+  },
+  "dependencies": {
+    "pg": "driver de PostgreSQL",
+    "jsonwebtoken": "Generación y verificación de JWT",
+    "dotenv": "Manejo de variables de entorno",
+    "@types/pg": "Tipos TypeScript para pg",
+    "@types/jsonwebtoken": "Tipos TypeScript para jsonwebtoken"
+  },
+  "file_structure": {
+    "src/lib/db.ts": "Pool de conexiones PostgreSQL",
+    "src/lib/auth.ts": "Funciones de hash (PBKDF2) y JWT",
+    "src/app/api/auth/signin/route.ts": "API de login",
+    "src/app/api/auth/signup/route.ts": "API de registro",
+    "src/context/AuthContext.tsx": "Context global de autenticación",
+    "src/components/auth/SignInForm.tsx": "Componente de formulario de login",
+    "src/components/auth/SignUpForm.tsx": "Componente de formulario de registro",
+    "database.sql": "Script SQL para crear tablas"
+  },
+  "validation_rules": {
+    "email": "Debe ser un email válido y único",
+    "password": {
+      "minLength": "8 caracteres (recomendado)",
+      "requirements": "Se recomienda mayúsculas, minúsculas, números y caracteres especiales"
+    },
+    "firstName": "Requerido",
+    "lastName": "Requerido",
+    "confirmPassword": "Debe coincidir exactamente con password"
+  },
+  "error_codes": {
+    "400": "Bad Request - Datos inválidos",
+    "401": "Unauthorized - Email o contraseña incorrectos",
+    "500": "Internal Server Error - Error del servidor"
+  }
+}
